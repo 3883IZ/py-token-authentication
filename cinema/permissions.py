@@ -3,11 +3,18 @@ from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 class IsAdminOrIfAuthenticatedReadOnly(BasePermission):
     """
-    Дозволяє повний доступ тільки адміністратору.
-    Для автентифікованих користувачів — лише читання.
+    Full access only for admin.
+    Authenticated users have read-only access.
+    Unauthenticated users have no access.
     """
 
     def has_permission(self, request, view):
-        if request.method in SAFE_METHODS:
+        if request.user and request.user.is_staff:
             return True
-        return request.user and request.user.is_staff
+        if (
+            request.user
+            and request.user.is_authenticated
+            and request.method in SAFE_METHODS
+        ):
+            return True
+        return False
